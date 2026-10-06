@@ -6,3 +6,6 @@ adding one 'person' rectangle to job 1
 deleting it again
   pushed after  2.03 s: total=3953
 total is back to 3953
+
+# A user without access is refused on the socket as well (run as 'tester'):
+tester on the live socket -> close code 4403
