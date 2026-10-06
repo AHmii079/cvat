@@ -71,7 +71,10 @@ function LabelCountsChart({ labels }: { labels: LabelCount[] }): JSX.Element {
                     indexAxis: 'y',
                     maintainAspectRatio: false,
                     animation: false,
-                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { precision: 0 } },
+                        y: { ticks: { autoSkip: false } },
+                    },
                 }}
             />
         </div>
