@@ -18,7 +18,10 @@ import re
 LIVE_PATH = re.compile(r"^/api/tasks/(?P<task_id>\d+)/label-counts/live$")
 POLL_SECONDS = 2.0
 SERVER_ERROR_CLOSE_CODE = 1011
-HANDSHAKE_HEADERS = {
+# Headers of the WebSocket handshake that must not reach the in-process HTTP request:
+# the upgrade itself, Accept (CVAT answers 406 to anything but its own media type) and
+# Accept-Encoding (GZipMiddleware would compress the JSON that is sent as text).
+SKIPPED_HEADERS = {
     b"connection",
     b"upgrade",
     b"sec-websocket-key",
@@ -26,6 +29,7 @@ HANDSHAKE_HEADERS = {
     b"sec-websocket-extensions",
     b"sec-websocket-protocol",
     b"accept",
+    b"accept-encoding",
 }
 
 
@@ -71,9 +75,7 @@ async def _wait_for_disconnect(receive) -> None:
 
 async def _get_label_counts(django_app, ws_scope, task_id: int) -> tuple[int, bytes]:
     path = f"/api/tasks/{task_id}/label-counts"
-    # No Accept header: CVAT's renderer only offers application/vnd.cvat+json and answers
-    # 406 to a plain application/json, so the default negotiation is left to choose it.
-    headers = [(k, v) for k, v in ws_scope["headers"] if k not in HANDSHAKE_HEADERS]
+    headers = [(k, v) for k, v in ws_scope["headers"] if k not in SKIPPED_HEADERS]
     http_scope = {
         "type": "http",
         "asgi": ws_scope.get("asgi", {"version": "3.0"}),
