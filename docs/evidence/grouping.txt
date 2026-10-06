@@ -1,0 +1,16 @@
+# Item 7 check, run in the Codespace on task 1 (2026-10-06 17:27 UTC).
+# Fetched /api/tasks/1/label-counts with and without ?group_by=shape_type as admin,
+# then compared: per label, sum(by_shape_type) == count, and count == plain count.
+person split: {'mask': 19, 'polygon': 1198}
+totals by shape type: {'mask': 37, 'polygon': 3916}
+grouped total: 3953 | plain total: 3953 | labels with mismatch: 0
+bad group_by value -> 400
+date: 2026-10-06T17:27:43Z
+url: http://localhost:8080/api/tasks/1/label-counts?group_by=shape_type
+warm-up done
+run 1: 0.035388s
+run 2: 0.038192s
+run 3: 0.040253s
+run 4: 0.035967s
+run 5: 0.042448s
+median: 38.2 ms  min: 35.4 ms  max: 42.4 ms  spread: 7.1 ms

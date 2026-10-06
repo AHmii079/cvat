@@ -1,0 +1,5 @@
+@AHmii079 ➜ /workspaces/cvat (dev-test01) $ bash docs/evidence/access_check.sh 1 admin admin123 tester 'Tester12345!'
+GET http://localhost:8080/api/tasks/1/label-counts
+no login:        401
+user 'tester':  403
+owner 'admin':  200

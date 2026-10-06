@@ -1,0 +1,7 @@
+@AHmii079 ➜ /workspaces/cvat (dev-test01) $ lscpu | grep "Model name"; nproc; free -h | head -2; head -2 /etc/os-release
+Model name:                              AMD EPYC 7763 64-Core Processor
+4
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       6.9Gi       2.5Gi        88Mi       6.6Gi       8.8Gi
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+NAME="Ubuntu"

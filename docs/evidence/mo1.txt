@@ -1,0 +1,10 @@
+@AHmii079 ➜ /workspaces/cvat (dev-test01) $ bash docs/evidence/measure.sh 1 admin admin123
+date: 2026-10-06T17:07:17Z
+url: http://localhost:8080/api/tasks/1/label-counts
+warm-up done
+run 1: 0.036099s
+run 2: 0.034739s
+run 3: 0.042412s
+run 4: 0.050417s
+run 5: 0.043719s
+median: 42.4 ms  min: 34.7 ms  max: 50.4 ms  spread: 15.7 ms
