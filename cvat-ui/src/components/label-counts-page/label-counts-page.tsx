@@ -10,11 +10,12 @@ import { Link } from 'react-router-dom';
 import { Row, Col } from 'antd/lib/grid';
 import Button from 'antd/lib/button';
 import Empty from 'antd/lib/empty';
+import Radio from 'antd/lib/radio';
 import Result from 'antd/lib/result';
 import Title from 'antd/lib/typography/Title';
 import Text from 'antd/lib/typography/Text';
 import {
-    Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip,
+    Chart as ChartJS, BarElement, CategoryScale, Legend, LinearScale, Tooltip,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 
@@ -22,7 +23,7 @@ import { getCore, ServerError } from 'cvat-core-wrapper';
 import GoBackButton from 'components/common/go-back-button';
 import CVATLoadingSpinner from 'components/common/loading-spinner';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
+ChartJS.register(BarElement, CategoryScale, Legend, LinearScale, Tooltip);
 
 const core = getCore();
 
@@ -30,13 +31,17 @@ interface LabelCount {
     id: number;
     name: string;
     count: number;
+    by_shape_type?: Record<string, number>;
 }
 
 interface TaskLabelCounts {
     task_id: number;
     total: number;
+    group_by: 'shape_type' | null;
     labels: LabelCount[];
 }
+
+type Grouping = 'total' | 'shape_type';
 
 type PageState =
     | { status: 'loading' }
@@ -44,6 +49,27 @@ type PageState =
     | { status: 'ready', data: TaskLabelCounts };
 
 const BAR_HEIGHT_PX = 22;
+const TOTAL_COLOR = '#1890ff';
+const SHAPE_TYPE_COLORS: Record<string, string> = {
+    rectangle: '#1890ff',
+    polygon: '#52c41a',
+    mask: '#fa8c16',
+    polyline: '#722ed1',
+    points: '#eb2f96',
+    ellipse: '#13c2c2',
+    cuboid: '#a0d911',
+    skeleton: '#8c8c8c',
+};
+
+function shapeTypeTotals(labels: LabelCount[]): [string, number][] {
+    const totals: Record<string, number> = {};
+    for (const label of labels) {
+        for (const [type, count] of Object.entries(label.by_shape_type ?? {})) {
+            totals[type] = (totals[type] ?? 0) + count;
+        }
+    }
+    return Object.entries(totals).sort(([, a], [, b]) => b - a);
+}
 
 function errorMessage(error: unknown): string {
     if (error instanceof ServerError && error.code === 403) {
@@ -55,25 +81,29 @@ function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : 'The request failed.';
 }
 
-function LabelCountsChart({ labels }: { labels: LabelCount[] }): JSX.Element {
+function LabelCountsChart({ data }: { data: TaskLabelCounts }): JSX.Element {
+    const { labels } = data;
+    const byShapeType = data.group_by === 'shape_type';
+    const datasets = byShapeType ?
+        shapeTypeTotals(labels).map(([type]) => ({
+            label: type,
+            data: labels.map((label) => label.by_shape_type?.[type] ?? 0),
+            backgroundColor: SHAPE_TYPE_COLORS[type] ?? '#bfbfbf',
+        })) :
+        [{ label: 'Annotations', data: labels.map((label) => label.count), backgroundColor: TOTAL_COLOR }];
+
     return (
-        <div className='cvat-label-counts-chart' style={{ height: labels.length * BAR_HEIGHT_PX + 40 }}>
+        <div className='cvat-label-counts-chart' style={{ height: labels.length * BAR_HEIGHT_PX + 60 }}>
             <Bar
-                data={{
-                    labels: labels.map((label) => label.name),
-                    datasets: [{
-                        label: 'Annotations',
-                        data: labels.map((label) => label.count),
-                        backgroundColor: '#1890ff',
-                    }],
-                }}
+                data={{ labels: labels.map((label) => label.name), datasets }}
                 options={{
                     indexAxis: 'y',
                     maintainAspectRatio: false,
                     animation: false,
+                    plugins: { legend: { display: byShapeType, position: 'top' } },
                     scales: {
-                        x: { beginAtZero: true, ticks: { precision: 0 } },
-                        y: { ticks: { autoSkip: false } },
+                        x: { beginAtZero: true, stacked: byShapeType, ticks: { precision: 0 } },
+                        y: { stacked: byShapeType, ticks: { autoSkip: false } },
                     },
                 }}
             />
@@ -84,14 +114,15 @@ function LabelCountsChart({ labels }: { labels: LabelCount[] }): JSX.Element {
 function LabelCountsPage(): JSX.Element {
     const taskId = +useParams<{ tid: string }>().tid;
     const [state, setState] = useState<PageState>({ status: 'loading' });
+    const [grouping, setGrouping] = useState<Grouping>('total');
 
     const fetchCounts = useCallback(async (): Promise<TaskLabelCounts> => {
         const response = await core.server.request(
             `${core.config.backendAPI}/tasks/${taskId}/label-counts`,
-            { method: 'GET' },
+            { method: 'GET', params: grouping === 'shape_type' ? { group_by: 'shape_type' } : {} },
         ) as { data: TaskLabelCounts };
         return response.data;
-    }, [taskId]);
+    }, [taskId, grouping]);
 
     const load = useCallback((): (() => void) => {
         let active = true;
@@ -131,12 +162,16 @@ function LabelCountsPage(): JSX.Element {
             />
         );
     } else {
+        const typeSummary = shapeTypeTotals(state.data.labels)
+            .map(([type, count]) => `${type} ${count}`)
+            .join(', ');
         content = (
             <>
                 <Text type='secondary'>
                     {`${state.data.total} annotations across ${state.data.labels.length} labels`}
+                    {typeSummary && ` (${typeSummary})`}
                 </Text>
-                <LabelCountsChart labels={state.data.labels} />
+                <LabelCountsChart data={state.data} />
             </>
         );
     }
@@ -150,9 +185,20 @@ function LabelCountsPage(): JSX.Element {
             </Row>
             <Row justify='center' className='cvat-label-counts-inner-wrapper'>
                 <Col span={22} xl={18} xxl={14} className='cvat-label-counts-inner'>
-                    <Title level={4} className='cvat-label-counts-header'>
-                        {`Annotations per label — task #${taskId}`}
-                    </Title>
+                    <Row justify='space-between' align='middle' className='cvat-label-counts-header'>
+                        <Title level={4}>{`Annotations per label — task #${taskId}`}</Title>
+                        <Radio.Group
+                            className='cvat-label-counts-grouping'
+                            optionType='button'
+                            buttonStyle='solid'
+                            value={grouping}
+                            onChange={(event) => setGrouping(event.target.value)}
+                            options={[
+                                { label: 'Total', value: 'total' },
+                                { label: 'By shape type', value: 'shape_type' },
+                            ]}
+                        />
+                    </Row>
                     {content}
                 </Col>
             </Row>
