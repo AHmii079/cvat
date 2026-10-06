@@ -1,0 +1,8 @@
+# Item 8, run in the Codespace on task 1 (2026-10-06, about 17:50 UTC).
+$ python3 docs/evidence/live_check.py 1 admin admin123 person
+connected, first message: total=3953
+adding one 'person' rectangle to job 1
+  pushed after  2.04 s: total=3954
+deleting it again
+  pushed after  2.03 s: total=3953
+total is back to 3953

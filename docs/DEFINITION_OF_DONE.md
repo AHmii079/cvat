@@ -25,7 +25,7 @@ A line ticked without evidence counts as not done.
 
 ## Live updates (items 8–9, lines added when they came back into scope)
 
-- [ ] Adding or deleting an annotation changes the pushed total without reloading, with the delay measured (`docs/evidence/live_check.py` output).
+- [x] Adding or deleting an annotation changes the pushed total without reloading, with the delay measured (`docs/evidence/live_check.py` output). Evidence: `docs/evidence/live.txt`, 3953 → 3954 → 3953, pushes after 2.04 s and 2.03 s (the 2 s check interval plus the request).
 - [ ] The page shows the change live in the browser (before/after screenshots).
 - [ ] When the server goes away the page shows "Connection lost, retrying"; when it returns the page shows "Live" again with current counts (screenshots).
 - [ ] A user without access is refused on the socket too (close code 4403).
