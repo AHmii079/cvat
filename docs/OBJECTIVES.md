@@ -4,12 +4,12 @@
 
 | Item | Value |
 |------|-------|
-| Host | GitHub Codespace (filled in from `lscpu`, `free -h`, `/etc/os-release`) |
-| CPU | TBD |
-| RAM | TBD |
-| OS | TBD |
+| Host | GitHub Codespace, 4-core machine type (raw output: `docs/evidence/machine.txt`) |
+| CPU | AMD EPYC 7763, 4 vCPUs available |
+| RAM | 15 GiB total, 8.8 GiB available while the CVAT stack was running |
+| OS | Ubuntu 24.04.5 LTS |
 | CVAT commit | `8d7ae755c5b8de82e8711756b35c0207655ef1ae` |
-| Dataset | COCO 2017 val, TBD images / TBD annotations in one task |
+| Dataset | COCO 2017 val, first 500 images by file name: 3,541 COCO annotations, imported by CVAT as 3,953 shapes, one task (id 1) |
 
 ## MO-1 — Label count endpoint latency
 
@@ -24,4 +24,19 @@
 
 ## Results
 
-(Raw output pasted here after measuring.)
+Raw output: `docs/evidence/mo1.txt` (measured 2026-10-06 17:07 UTC).
+
+| Run | 1 | 2 | 3 | 4 | 5 |
+|-----|---|---|---|---|---|
+| Time (ms) | 36.1 | 34.7 | 42.4 | 50.4 | 43.7 |
+
+**Median 42.4 ms, min 34.7 ms, max 50.4 ms, spread 15.7 ms. Target (≤ 150 ms) met.**
+
+What this does and does not show:
+
+- At 3,953 shapes the target was met with about 3.5× headroom. At this data size it was not
+  demanding, so it confirms the query is not wasteful. It does not show how the endpoint scales.
+- The spread (15.7 ms) is about a third of the median. On a shared Codespace, five runs are
+  enough to say "well under 150 ms" but not to compare small optimisations.
+- The time includes Traefik routing, token authentication and the OPA permission call, not only
+  the database query. I did not separate them, so I cannot say which part dominates.

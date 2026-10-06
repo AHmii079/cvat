@@ -1,0 +1,83 @@
+@AHmii079 ➜ /workspaces/cvat (dev-test01) $ python3 docs/evidence/check_counts.py ~/coco/instances_subset.json 1 admin admin123
+label            instances  shapes  endpoint  match
+airplane                12      12        12  yes
+apple                   17      20        20  yes
+backpack                46      51        51  yes
+banana                  39      39        39  yes
+baseball bat             8      11        11  yes
+baseball glove          10      10        10  yes
+bear                     4       4         4  yes
+bed                     19      21        21  yes
+bench                   38      50        50  yes
+bicycle                 34      45        45  yes
+bird                    50      52        52  yes
+boat                    38      38        38  yes
+book                   112     113       113  yes
+bottle                 117     120       120  yes
+bowl                    60      61        61  yes
+broccoli                45      45        45  yes
+bus                     35      38        38  yes
+cake                    13      13        13  yes
+car                    169     195       195  yes
+carrot                  29      29        29  yes
+cat                     17      17        17  yes
+cell phone              28      28        28  yes
+chair                  201     227       227  yes
+clock                   20      20        20  yes
+couch                   27      41        41  yes
+cow                     15      17        17  yes
+cup                    108     109       109  yes
+dining table            83     106       106  yes
+dog                      9       9         9  yes
+donut                   28      28        28  yes
+elephant                17      19        19  yes
+fire hydrant            11      11        11  yes
+fork                    17      23        23  yes
+frisbee                 14      14        14  yes
+giraffe                  9       9         9  yes
+hair drier               0       0         0  yes
+handbag                 41      46        46  yes
+horse                   28      34        34  yes
+hot dog                 15      15        15  yes
+keyboard                22      22        22  yes
+kite                    25      27        27  yes
+knife                   34      41        41  yes
+laptop                  30      33        33  yes
+microwave                4       4         4  yes
+motorcycle              46      56        56  yes
+mouse                   15      15        15  yes
+orange                  23      23        23  yes
+oven                    18      21        21  yes
+parking meter           14      14        14  yes
+person                1088    1217      1217  yes
+pizza                   19      19        19  yes
+potted plant            44      45        45  yes
+refrigerator            16      17        17  yes
+remote                  29      34        34  yes
+sandwich                19      19        19  yes
+scissors                 2       2         2  yes
+sheep                   18      20        20  yes
+sink                    20      21        21  yes
+skateboard              12      13        13  yes
+skis                    25      54        54  yes
+snowboard                6       7         7  yes
+spoon                   22      25        25  yes
+sports ball             22      31        31  yes
+stop sign                4       4         4  yes
+suitcase                22      27        27  yes
+surfboard               28      34        34  yes
+teddy bear              14      15        15  yes
+tennis racket           22      31        31  yes
+tie                     52      54        54  yes
+toaster                  0       0         0  yes
+toilet                  17      17        17  yes
+toothbrush               1       1         1  yes
+traffic light           29      35        35  yes
+train                   14      17        17  yes
+truck                   29      35        35  yes
+tv                      33      33        33  yes
+umbrella                20      21        21  yes
+vase                    22      23        23  yes
+wine glass              47      55        55  yes
+zebra                   31      31        31  yes
+TOTAL                 3541    3953      3953  mismatched labels: 0

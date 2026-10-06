@@ -5,21 +5,22 @@ A line ticked without evidence counts as not done.
 
 ## Floor (items 1–4)
 
-- [ ] Endpoint returns per-label counts that match the COCO JSON for the same images (script output in `docs/evidence/`).
+- [x] Endpoint returns per-label counts that match the COCO JSON for the same images (script output in `docs/evidence/`).
+  Evidence: `docs/evidence/counts.txt`, 80 of 80 labels match, 3,953 shapes. The expected value is shapes, not COCO instances (see Plan, "Changes during the work").
 - [ ] Page opens from the task page and draws a bar chart from the endpoint (screenshot).
 - [ ] Task with no annotations shows an empty-state message, not an empty chart (screenshot).
 - [ ] Failed request shows an error message with a retry action (screenshot, server stopped or 500 forced).
 
 ## Access (item 5)
 
-- [ ] No login → 401 (curl output).
-- [ ] Logged-in user with no access to the task → 403 (curl output).
-- [ ] Task owner → 200 (curl output).
+- [x] No login → 401 (curl output). Evidence: `docs/evidence/access.txt`.
+- [x] Logged-in user with no access to the task → 403 (curl output). Evidence: `docs/evidence/access.txt`, and `screenshots/tester-sees-no-tasks.png` shows the same user cannot see the task in CVAT's own list.
+- [x] Task owner → 200 (curl output). Evidence: `docs/evidence/access.txt`.
 
 ## Objective and filter (items 6–7)
 
-- [ ] MO-1 measured: 1 warm-up + 5 runs, raw output saved, median and spread reported.
-- [ ] MO-1 target met, or missed with the reason written down.
+- [x] MO-1 measured: 1 warm-up + 5 runs, raw output saved, median and spread reported. Evidence: `docs/evidence/mo1.txt`, median 42.4 ms, spread 15.7 ms.
+- [x] MO-1 target met, or missed with the reason written down. Met: 42.4 ms against ≤ 150 ms. OBJECTIVES.md says what that does and does not show.
 - [ ] `group_by=shape_type` returns counts per label and shape type, and the totals equal the plain counts.
 
 ## Hygiene

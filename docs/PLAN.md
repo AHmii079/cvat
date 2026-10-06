@@ -14,7 +14,7 @@ laptop has 8 GB RAM and CVAT needs about 8 GB free on its own.
   `job__segment__task_id`, never by `label__task`.
 - Every DRF view must declare `iam_permission_class`. `PolicyEnforcer`
   (`cvat/apps/iam/permissions.py`) asserts on it and asks that class which OPA checks to run.
-  I will reuse `TaskPermission.create_scope_view`, so access follows the existing task rules
+  I will reuse `TaskPermission`, so access follows the existing task rules
   instead of a check I write myself.
 - `cvat-ui` already ships `chart.js` + `react-chartjs-2`, and `core.server.request` sends
   CVAT's own auth. No new dependencies are needed.
@@ -50,4 +50,16 @@ floor is items 1–4.
 
 ## Changes during the work
 
-(Filled in as they happen, with the reason.)
+- **Permission scope.** I planned `TaskPermission.create_scope_view` (the `view` scope). I used
+  `view:annotations` instead, through `TaskPermission.create_base_perm`, because the endpoint
+  reveals annotation data, not just task metadata. CVAT's rules list both scopes.
+- **Runtime fixes, not code changes.** Containers in the Codespace could not reach each other
+  (server → database timed out). The cause was two iptables backends: bridge traffic was filtered
+  by rules Docker had not written. Fixed with `sysctl net.bridge.bridge-nf-call-iptables=0` and
+  `iptables-legacy -P FORWARD ACCEPT`. Cost: about 15 minutes.
+- **Counts do not equal COCO instances.** The task has 3,541 COCO annotations but 3,953 shapes.
+  A COCO object whose outline has several parts is imported as several polygons. I changed the
+  correctness check to compare against expected *shapes*, and it matches on all 80 labels
+  (`docs/evidence/counts.txt`). The page reports shapes, and says "annotations" in the CVAT sense.
+- **Chart layout.** With 80 labels, Chart.js hid every other name, and then the card squeezed
+  the rows together. Fixed in two small commits after seeing it in the browser.
