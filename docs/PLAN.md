@@ -72,3 +72,16 @@ The result confirmed the reason: task 1 has 3,916 polygons and 37 masks, and no 
   (`docs/evidence/counts.txt`). The page reports shapes, and says "annotations" in the CVAT sense.
 - **Chart layout.** With 80 labels, Chart.js hid every other name, and then the card squeezed
   the rows together. Fixed in two small commits after seeing it in the browser.
+- **Items 8–9 back in scope (decided at about 2 h of work, items 1–7 done).** The skip assumed
+  WebSocket support meant adding Django Channels. Reading CVAT showed it already runs Django under
+  uvicorn (`supervisord/server.conf`, `cvat/asgi.py`) with the `websockets` package installed,
+  and its nginx already forwards the `Upgrade` header. So a WebSocket route needs only a small
+  ASGI wrapper, not a new framework. Plan for 8–9, about 1.5 h:
+  1. ASGI wrapper in `cvat/apps/test/live.py`, hooked into `cvat/asgi.py`, serving
+     `/api/tasks/{id}/label-counts/live`.
+  2. Each tick, the wrapper calls the existing REST endpoint internally with the socket's own
+     cookies, so login, permissions and counting are reused, not copied. It pushes only when the
+     result changed, and closes with 4401/4403/4404 when access fails.
+  3. The page subscribes, updates the chart in place, shows the connection state, and reconnects
+     with backoff (1 s, 2 s, 4 s … up to 30 s), refetching once reconnected.
+
