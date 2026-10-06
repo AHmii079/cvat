@@ -16,6 +16,7 @@
 .cvat-label-counts-inner {
     @include cvat-management-page-inner;
 
+    overflow-y: auto;
     padding-bottom: $grid-unit-size * 3;
 }
 
@@ -24,6 +25,7 @@
 }
 
 .cvat-label-counts-chart {
+    flex-shrink: 0;
     margin-top: $grid-unit-size * 2;
 }
 
