@@ -48,6 +48,15 @@ floor is items 1–4.
   Adding it means ASGI routing plus a channel layer, which is hours of risk for bonus items.
   I return to them only if items 1–7 are done and documented with at least 2 hours left.
 
+## Item 7 — why group by shape type
+
+I chose shape type over filtering by job or by frame range. COCO mixes two kinds of annotation for
+the same class: object outlines and "crowd" regions. They are imported as polygons and masks, and
+they are used differently when training (instance outlines versus regions to ignore or segment).
+A plain count hides that mix, which matters when deciding if a class has enough usable examples.
+It is also cheap: one more column in the same `GROUP BY`, no extra query.
+The result confirmed the reason: task 1 has 3,916 polygons and 37 masks, and no rectangles.
+
 ## Changes during the work
 
 - **Permission scope.** I planned `TaskPermission.create_scope_view` (the `view` scope). I used

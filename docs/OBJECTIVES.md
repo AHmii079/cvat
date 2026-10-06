@@ -20,7 +20,7 @@
 | Target | Median of 5 runs at or below 150 ms. Spread (max − min) reported. |
 | Why this number | The page makes this single call before drawing anything. CVAT's own task page already makes several API calls, so a chart that adds more than about 150 ms would be noticeable. The query is one `GROUP BY` over indexed foreign keys, so missing this target would point to a query problem, not to the dataset size. |
 | Conditions | Local Docker stack in the Codespace, the COCO task above, no other requests running, server already warm. |
-| Not included | Browser rendering time, the first request after a container restart, and the `group_by=shape_type` variant (measured separately if time allows). |
+| Not included | Browser rendering time, the first request after a container restart, and the `group_by=shape_type` variant (measured separately below, not part of the target). |
 
 ## Results
 
@@ -40,3 +40,11 @@ What this does and does not show:
   enough to say "well under 150 ms" but not to compare small optimisations.
 - The time includes Traefik routing, token authentication and the OPA permission call, not only
   the database query. I did not separate them, so I cannot say which part dominates.
+
+### Same method, `group_by=shape_type` (not part of the target)
+
+Raw output: `docs/evidence/grouping.txt`. Median 38.2 ms, min 35.4 ms, max 42.4 ms, spread 7.1 ms.
+Adding the shape type to the `GROUP BY` made no measurable difference. This median is lower than
+the plain one, which shows that run-to-run noise on this machine is larger than the cost of the
+extra column.
+

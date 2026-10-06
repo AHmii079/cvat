@@ -21,7 +21,7 @@ A line ticked without evidence counts as not done.
 
 - [x] MO-1 measured: 1 warm-up + 5 runs, raw output saved, median and spread reported. Evidence: `docs/evidence/mo1.txt`, median 42.4 ms, spread 15.7 ms.
 - [x] MO-1 target met, or missed with the reason written down. Met: 42.4 ms against ≤ 150 ms. OBJECTIVES.md says what that does and does not show.
-- [ ] `group_by=shape_type` returns counts per label and shape type, and the totals equal the plain counts.
+- [x] `group_by=shape_type` returns counts per label and shape type, and the totals equal the plain counts. Evidence: `docs/evidence/grouping.txt` (0 mismatches over 80 labels, 3,953 = 3,953; invalid value → 400) and `screenshots/chart-by-shape-type.png`.
 
 ## Hygiene
 
