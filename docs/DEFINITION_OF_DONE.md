@@ -7,9 +7,9 @@ A line ticked without evidence counts as not done.
 
 - [x] Endpoint returns per-label counts that match the COCO JSON for the same images (script output in `docs/evidence/`).
   Evidence: `docs/evidence/counts.txt`, 80 of 80 labels match, 3,953 shapes. The expected value is shapes, not COCO instances (see Plan, "Changes during the work").
-- [ ] Page opens from the task page and draws a bar chart from the endpoint (screenshot).
-- [ ] Task with no annotations shows an empty-state message, not an empty chart (screenshot).
-- [ ] Failed request shows an error message with a retry action (screenshot, server stopped or 500 forced).
+- [x] Page opens from the task page and draws a bar chart from the endpoint (screenshot). Evidence: `screenshots/chart.png`, task 1, 3,953 annotations across 80 labels. Reached from the task's Actions → Annotations per label.
+- [x] Task with no annotations shows an empty-state message, not an empty chart (screenshot). Evidence: `screenshots/empty-state.png`, task 2 (one image, no annotations).
+- [x] Failed request shows an error message with a retry action (screenshot, server stopped or 500 forced). Evidence: `screenshots/error-404.png` (task 999) and `screenshots/error-403.png` (tester on task 1). I showed 404 and 403 rather than a stopped server; both go through the same error branch, and an unreachable server falls back to the error's own message.
 
 ## Access (item 5)
 
