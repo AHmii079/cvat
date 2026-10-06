@@ -27,15 +27,30 @@ A line ticked without evidence counts as not done.
 
 - [x] Adding or deleting an annotation changes the pushed total without reloading, with the delay measured (`docs/evidence/live_check.py` output). Evidence: `docs/evidence/live.txt`, 3953 → 3954 → 3953, pushes after 2.04 s and 2.03 s (the 2 s check interval plus the request).
 - [ ] The page shows the change live in the browser (before/after screenshots).
-- [ ] When the server goes away the page shows "Connection lost, retrying"; when it returns the page shows "Live" again with current counts (screenshots).
+- [x] When the server goes away the page shows "Connection lost, retrying"; when it returns the page shows "Live" again with current counts (screenshots). Evidence: `screenshots/reconnecting.png` (after `docker stop cvat_server`) and `screenshots/reconnected.png` (after `docker start cvat_server`). The first screenshot was taken before the countdown fix (commit `c4e0eab`), so it shows the fixed "30 s" text; the countdown was then checked by eye.
 - [x] A user without access is refused on the socket too (close code 4403). Evidence: `docs/evidence/live.txt`, last line.
 
 ## Hygiene
 
-- [ ] The first commit holds only these docs; commits after it are small and say what changed and why.
-- [ ] No dead code, no commented-out blocks, no stray files in the diff.
-- [ ] Everything not finished is listed below with the reason.
+- [x] The first commit holds only these docs; commits after it are small and say what changed and why. Evidence: `git log --reverse 8d7ae75..dev-test01`; the first commit, `e7898b5`, has only `docs/`.
+- [x] No dead code, no commented-out blocks, no stray files in the diff. Checked with `git diff 8d7ae75..HEAD`: 36 files, all additions. Backend changes are in `cvat/apps/test` except 4 registration lines (`settings/base.py`, `urls.py`, `asgi.py`); UI changes are in `components/label-counts-page` except the route and the menu entry.
+- [x] Everything not finished is listed below with the reason.
 
 ## Not finished
 
-(Filled in at the end.)
+- **Browser "after" screenshot for live updates.** The push is proven by `live.txt`
+  (3953 → 3954 → 3953) and `screenshots/live.png` shows the Live tag. I did not capture the
+  page at the moment it showed 3954, because the count is back to 3953 about 2 s later.
+- **Tracks and tags are not counted.** Only `LabeledShape` is counted. `LabeledTrack` (video
+  tracks) and `LabeledImage` (tags) are not, because COCO creates neither and I had no data to
+  check them against.
+- **No tests in CVAT's own test suite.** The evidence comes from scripts run against the live
+  stack, not from tests in `tests/python` that CI would run. Writing them would mean setting up
+  CVAT's REST test fixtures, which I left for the time I had.
+- **Scaling not measured.** MO-1 is measured on 500 images (3,953 shapes). I did not measure the
+  full 5,000-image set, so I cannot say how the endpoint or the 2 s live check behaves there.
+- **Organizations not tested.** Everything ran in the personal workspace. The permission check
+  reuses CVAT's task rules, which cover organizations, but I did not test with an organization.
+- **Live updates are polled, not event-driven.** See the decision record in PLAN.md for the
+  cost: up to 2 s delay and one count request every 2 s per open page.
+

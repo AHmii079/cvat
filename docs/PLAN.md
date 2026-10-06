@@ -85,3 +85,32 @@ The result confirmed the reason: task 1 has 3,916 polygons and 37 masks, and no 
   3. The page subscribes, updates the chart in place, shows the connection state, and reconnects
      with backoff (1 s, 2 s, 4 s … up to 30 s), refetching once reconnected.
 
+## Decision record (item 10)
+
+**Live updates: an in-process re-check every 2 s, instead of event-driven broadcasting.**
+
+- **Taken.** A small ASGI wrapper (`cvat/apps/test/live.py`, hooked in `cvat/asgi.py`) owns
+  `/api/tasks/{id}/label-counts/live`. Every 2 s it calls the existing REST endpoint inside the
+  process, with the socket's own cookies or token, and pushes the JSON only if it changed.
+  Login, the OPA permission check and the counting query are the same code as the REST endpoint,
+  and access is re-checked on every tick, so revoking access closes the socket (4403).
+- **Rejected.** Django Channels with a Redis channel layer, broadcasting a "task changed" event
+  from the code that saves annotations. That is event-driven: the update is instant and costs
+  nothing while nothing changes.
+- **Why rejected.** It needs a new dependency, routing changes in CVAT's ASGI setup, and a hook
+  inside `cvat/apps/engine`'s annotation save path. Annotations are written with `bulk_create`,
+  which skips model signals, so the hook would have to go into engine code rather than sit in
+  my app. It would also need its own permission check for subscribers.
+- **What rejecting it cost.**
+  - Updates arrive up to 2 s late (measured 2.03–2.04 s, `docs/evidence/live.txt`).
+  - Every open page costs one full count request every 2 s (about 40 ms, MO-1), even when nothing
+    changed: about 2 % of one worker per viewer. That is fine for a statistics page with a few
+    viewers and would not be fine for hundreds of viewers on a large task.
+  - Two bugs came from the in-process request copying the handshake's headers: `Accept` caused a
+    406 (CVAT only serves `application/vnd.cvat+json`), and `Accept-Encoding` made
+    `GZipMiddleware` compress the JSON. Both are fixed and commented in `SKIPPED_HEADERS`.
+
+**Counts computed at request time, not stored.** A stored counter table would make reads
+trivially fast but could go stale silently, because `bulk_create` skips the signals that would
+keep it updated. The cost of rejecting it is a `GROUP BY` per request, measured at 42 ms.
+
