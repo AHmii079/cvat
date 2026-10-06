@@ -12,6 +12,7 @@ import Button from 'antd/lib/button';
 import Empty from 'antd/lib/empty';
 import Radio from 'antd/lib/radio';
 import Result from 'antd/lib/result';
+import Tag from 'antd/lib/tag';
 import Title from 'antd/lib/typography/Title';
 import Text from 'antd/lib/typography/Text';
 import {
@@ -22,6 +23,7 @@ import { Bar } from 'react-chartjs-2';
 import { getCore, ServerError } from 'cvat-core-wrapper';
 import GoBackButton from 'components/common/go-back-button';
 import CVATLoadingSpinner from 'components/common/loading-spinner';
+import { LiveStatus, liveLabelCountsUrl, useLiveLabelCounts } from './use-live-label-counts';
 
 ChartJS.register(BarElement, CategoryScale, Legend, LinearScale, Tooltip);
 
@@ -81,6 +83,20 @@ function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : 'The request failed.';
 }
 
+function LiveStatusTag({ status }: { status: LiveStatus }): JSX.Element {
+    if (status.state === 'live') {
+        return <Tag className='cvat-label-counts-live' color='green'>Live</Tag>;
+    }
+    if (status.state === 'reconnecting') {
+        return (
+            <Tag className='cvat-label-counts-live' color='orange'>
+                {`Connection lost, retrying in ${status.retryInSeconds} s`}
+            </Tag>
+        );
+    }
+    return <Tag className='cvat-label-counts-live'>Connecting…</Tag>;
+}
+
 function LabelCountsChart({ data }: { data: TaskLabelCounts }): JSX.Element {
     const { labels } = data;
     const byShapeType = data.group_by === 'shape_type';
@@ -116,13 +132,15 @@ function LabelCountsPage(): JSX.Element {
     const [state, setState] = useState<PageState>({ status: 'loading' });
     const [grouping, setGrouping] = useState<Grouping>('total');
 
+    const query = grouping === 'shape_type' ? '?group_by=shape_type' : '';
+
     const fetchCounts = useCallback(async (): Promise<TaskLabelCounts> => {
         const response = await core.server.request(
-            `${core.config.backendAPI}/tasks/${taskId}/label-counts`,
-            { method: 'GET', params: grouping === 'shape_type' ? { group_by: 'shape_type' } : {} },
+            `${core.config.backendAPI}/tasks/${taskId}/label-counts${query}`,
+            { method: 'GET' },
         ) as { data: TaskLabelCounts };
         return response.data;
-    }, [taskId, grouping]);
+    }, [taskId, query]);
 
     const load = useCallback((): (() => void) => {
         let active = true;
@@ -134,6 +152,12 @@ function LabelCountsPage(): JSX.Element {
     }, [fetchCounts]);
 
     useEffect(load, [load]);
+
+    const liveStatus = useLiveLabelCounts<TaskLabelCounts>(
+        state.status === 'ready' ? liveLabelCountsUrl(taskId, query) : null,
+        (data) => setState({ status: 'ready', data }),
+        (reason) => setState({ status: 'error', message: reason }),
+    );
 
     let content: JSX.Element;
     if (state.status === 'loading') {
@@ -167,10 +191,13 @@ function LabelCountsPage(): JSX.Element {
             .join(', ');
         content = (
             <>
-                <Text type='secondary'>
-                    {`${state.data.total} annotations across ${state.data.labels.length} labels`}
-                    {typeSummary && ` (${typeSummary})`}
-                </Text>
+                <div className='cvat-label-counts-summary'>
+                    <Text type='secondary'>
+                        {`${state.data.total} annotations across ${state.data.labels.length} labels`}
+                        {typeSummary && ` (${typeSummary})`}
+                    </Text>
+                    <LiveStatusTag status={liveStatus} />
+                </div>
                 <LabelCountsChart data={state.data} />
             </>
         );
