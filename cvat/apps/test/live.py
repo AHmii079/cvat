@@ -71,8 +71,9 @@ async def _wait_for_disconnect(receive) -> None:
 
 async def _get_label_counts(django_app, ws_scope, task_id: int) -> tuple[int, bytes]:
     path = f"/api/tasks/{task_id}/label-counts"
+    # No Accept header: CVAT's renderer only offers application/vnd.cvat+json and answers
+    # 406 to a plain application/json, so the default negotiation is left to choose it.
     headers = [(k, v) for k, v in ws_scope["headers"] if k not in HANDSHAKE_HEADERS]
-    headers.append((b"accept", b"application/json"))
     http_scope = {
         "type": "http",
         "asgi": ws_scope.get("asgi", {"version": "3.0"}),
