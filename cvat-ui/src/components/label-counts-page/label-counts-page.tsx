@@ -83,6 +83,22 @@ function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : 'The request failed.';
 }
 
+function secondsUntil(timestamp: number): number {
+    return Math.max(0, Math.ceil((timestamp - Date.now()) / 1000));
+}
+
+function RetryCountdown({ retryAt }: { retryAt: number }): JSX.Element {
+    const [seconds, setSeconds] = useState(() => secondsUntil(retryAt));
+
+    useEffect(() => {
+        setSeconds(secondsUntil(retryAt));
+        const timer = window.setInterval(() => setSeconds(secondsUntil(retryAt)), 1000);
+        return () => window.clearInterval(timer);
+    }, [retryAt]);
+
+    return <>{seconds > 0 ? `Connection lost, retrying in ${seconds} s` : 'Connection lost, retrying now'}</>;
+}
+
 function LiveStatusTag({ status }: { status: LiveStatus }): JSX.Element {
     if (status.state === 'live') {
         return <Tag className='cvat-label-counts-live' color='green'>Live</Tag>;
@@ -90,7 +106,7 @@ function LiveStatusTag({ status }: { status: LiveStatus }): JSX.Element {
     if (status.state === 'reconnecting') {
         return (
             <Tag className='cvat-label-counts-live' color='orange'>
-                {`Connection lost, retrying in ${status.retryInSeconds} s`}
+                <RetryCountdown retryAt={status.retryAt} />
             </Tag>
         );
     }

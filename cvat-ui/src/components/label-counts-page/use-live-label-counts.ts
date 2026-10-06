@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 export type LiveStatus =
     | { state: 'connecting' }
     | { state: 'live' }
-    | { state: 'reconnecting', retryInSeconds: number };
+    | { state: 'reconnecting', retryAt: number };
 
 // The server closes with 4000 + the HTTP status the REST endpoint returned.
 // These will not change by retrying, so the page shows them instead of reconnecting.
@@ -69,7 +69,7 @@ export function useLiveLabelCounts<T>(
                 }
                 const delay = Math.min(FIRST_RETRY_MS * 2 ** failedAttempts, MAX_RETRY_MS);
                 failedAttempts += 1;
-                setStatus({ state: 'reconnecting', retryInSeconds: delay / 1000 });
+                setStatus({ state: 'reconnecting', retryAt: Date.now() + delay });
                 retryTimer = window.setTimeout(connect, delay);
             };
         };
