@@ -23,6 +23,13 @@ A line ticked without evidence counts as not done.
 - [x] MO-1 target met, or missed with the reason written down. Met: 42.4 ms against ≤ 150 ms. OBJECTIVES.md says what that does and does not show.
 - [x] `group_by=shape_type` returns counts per label and shape type, and the totals equal the plain counts. Evidence: `docs/evidence/grouping.txt` (0 mismatches over 80 labels, 3,953 = 3,953; invalid value → 400) and `screenshots/chart-by-shape-type.png`.
 
+## Live updates (items 8–9, lines added when they came back into scope)
+
+- [ ] Adding or deleting an annotation changes the pushed total without reloading, with the delay measured (`docs/evidence/live_check.py` output).
+- [ ] The page shows the change live in the browser (before/after screenshots).
+- [ ] When the server goes away the page shows "Connection lost, retrying"; when it returns the page shows "Live" again with current counts (screenshots).
+- [ ] A user without access is refused on the socket too (close code 4403).
+
 ## Hygiene
 
 - [ ] The first commit holds only these docs; commits after it are small and say what changed and why.
